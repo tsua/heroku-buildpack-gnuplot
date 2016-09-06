@@ -58,10 +58,10 @@ function build() {
 
   cd "$CACHE_DIR"/"$DIR"
   echo "Configuring" | indent
-  ./configure --prefix=$PREFIX 2>/dev/null >/dev/null
+  ./configure --prefix=$PREFIX >/dev/null
   echo "Building" | indent
-  make -j4 2>/dev/null >/dev/null
-  make install 2>/dev/null >/dev/null
+  make -j4 >/dev/null
+  make install >/dev/null
 
 }
 
