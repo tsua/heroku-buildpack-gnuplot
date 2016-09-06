@@ -5,8 +5,6 @@ BUILD_DIR="$1" # Build dir of the app
 CACHE_DIR="$2" # Survives between builds, can be used to store build artifacts
 ENV_DIR="$3" # Heroku config variables
 
-rm -rf $CACHE_DIR/*
-
 if [ -f "$ENV_DIR"/ALWAYS_DOWNLOAD ]; then
   ALWAYS_DOWNLOAD=$(cat "$ENV_DIR"/ALWAYS_DOWNLOAD) # Always download the sources again
 fi
