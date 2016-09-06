@@ -65,11 +65,11 @@ function build() {
   local PREFIX="$BUILD_DIR"/.heroku/"$VENDOR"
 
   cd "$CACHE_DIR"/"$DIR"
-  if [ ! -d "$PREFIX" -o "$ALWAYS_BUILD" = "true" ]; then
+  if [ ! -f make.log -o "$ALWAYS_BUILD" = "true" ]; then
     echo "Configuring" | indent
     ./configure --prefix=$PREFIX 2>/dev/null >/dev/null
     echo "Building" | indent
-    make -j4 2>/dev/null >/dev/null
+    make -j4 2>make.err >make.log
     make install-strip 2>/dev/null >/dev/null
   else
     echo "Using prebuilt binary for $VENDOR" | indent 
