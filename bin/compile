@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+# Script arguments
+BUILD_DIR="$1" # Build dir of the app
+CACHE_DIR="$2" # Survives between builds, can be used to store build artifacts
+ENV_DIR="$3" # Heroku config variables
+
+if [ -f "$ENV_DIR"/ALWAYS_DOWNLOAD ]; then
+  ALWAYS_DOWNLOAD=$(cat "$ENV_DIR"/ALWAYS_DOWNLOAD) # Always download the sources again
+fi
+
+if [ -f "$ENV_DIR"/ALWAYS_BUILD ]; then
+  ALWAYS_BUILD=$(cat "$ENV_DIR"/ALWAYS_BUILD) # Always rebuild everything
+fi
+
+LIBGD_VERSION="2.2.3"
+LIBGD_URL_PREFIX="https://github.com/libgd/libgd/releases/download/gd-$LIBGD_VERSION"
+
+GNUPLOT_VERSION="5.0.4"
+GNUPLOT_URL_PREFIX="http://downloads.sourceforge.net/project/gnuplot/gnuplot/$GNUPLOT_VERSION"
+
+header() { sed 's/^/-----> /'; }
+indent() { sed 's/^/       /'; }
+
+
+function download() {
+  VENDOR="$1"
+  VERSION="$2"
+  URL_PREFIX="$3"
+
+  NAME="$VENDOR"-"$VERSION"
+  ARCHIVE="$NAME".tar.gz
+  URL="$URL_PREFIX"/"$ARCHIVE"
+
+  if [ ! -f "$CACHE_DIR"/"$ARCHIVE" -o "$ALWAYS_DOWNLOAD" = "true" ]; then
+    rm -f "$CACHE_DIR"/"$ARCHIVE"
+    echo "Downloading $ARCHIVE" | indent
+    wget "$URL" -O "$CACHE_DIR"/"$ARCHIVE" -o /dev/null
+  else
+    echo "Reusing already downloaded version of $ARCHIVE" | indent
+  fi
+}
+
+function extract() {
+  local VENDOR="$1"
+  local VERSION="$2"
+
+  local DIR="$VENDOR"-"$VERSION"
+  local ARCHIVE="$DIR".tar.gz
+
+  if [ ! -d "$CACHE_DIR"/"$DIR" -o "$ALWAYS_BUILD" = "true" ]; then
+    echo "Extracting archive" | indent
+    cd "$CACHE_DIR"
+    rm -rf "$DIR"
+    tar -xvzf "$ARCHIVE" > /dev/null
+  fi
+}
+
+
+function build() {
+  local VENDOR="$1"
+  local VERSION="$2"
+
+  local DIR="$VENDOR"-"$VERSION"
+  local PREFIX="$BUILD_DIR"/.heroku/"$VENDOR"
+
+  cd "$CACHE_DIR"/"$DIR"
+  if [ ! -d "$PREFIX" -o "$ALWAYS_BUILD" = "true" ]; then
+    echo "Configuring" | indent
+    ./configure --prefix=$PREFIX 2>/dev/null >/dev/null
+    echo "Building" | indent
+    make -j4 2>/dev/null >/dev/null
+    make install-strip 2>/dev/null >/dev/null
+  else
+    echo "Using prebuilt binary for $VENDOR" | indent 
+  fi
+}
+
+function full_install() {
+  local VENDOR="$1"
+  local VERSION="$2"
+  local URL_PREFIX="$3"
+
+  echo "Installing $VENDOR" | header
+  download "$VENDOR" "$VERSION" "$URL_PREFIX"
+  extract "$VENDOR" "$VERSION"
+  build "$VENDOR" "$VERSION"
+  echo "$VENDOR installed in /app/.heroku/$VENDOR" | header
+}
+
+
+full_install "libgd" "$LIBGD_VERSION" "$LIBGD_URL_PREFIX"
+# Setup environment to build gnuplot
+export PKG_CONFIG_PATH="$BUILD_DIR"/.heroku/libgd/lib/pkgconfig
+export LDFLAGS="$LDFLAGS -L$BUILD_DIR/.heroku/libgd/lib"
+export CPPFLAGS="$CPPFLAGS -I$BUILD_DIR/.heroku/libgd/include"
+export PATH="$BUILD_DIR/.heroku/libgd/bin:$PATH"
+
+full_install "gnuplot" "$GNUPLOT_VERSION" "$GNUPLOT_URL_PREFIX"
+# Setup profile.d script to add gnuplot to path
+mkdir -p "$BUILD_DIR"/.profile.d
+(
+  echo 'PATH=/app/.heroku/gnuplot/bin:$PATH'
+) > "$BUILD_DIR"/.profile.d/gnuplot.sh
+
+echo "GnuPlot installed and added to path" | header
+echo
+
