@@ -62,8 +62,8 @@ function build() {
   echo "Configuring" | indent
   ./configure --prefix=$PREFIX 2>/dev/null >/dev/null
   echo "Building" | indent
-  make -j4 2>/dev/null >/dev/null
-  make install-strip 2>/dev/null >/dev/null
+  make -j4 #2>/dev/null >/dev/null
+  make install #2>/dev/null >/dev/null
 
 }
 
