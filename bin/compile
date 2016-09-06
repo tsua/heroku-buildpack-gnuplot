@@ -70,10 +70,11 @@ function build() {
     ./configure --prefix=$PREFIX 2>/dev/null >/dev/null
     echo "Building" | indent
     make -j4 2>make.err >make.log
-    make install-strip 2>/dev/null >/dev/null
   else
     echo "Using prebuilt binary for $VENDOR" | indent 
   fi
+  
+  make install-strip 2>/dev/null >/dev/null
 }
 
 function full_install() {
