@@ -35,7 +35,7 @@ function download() {
   if [ ! -f "$CACHE_DIR"/"$ARCHIVE" -o "$ALWAYS_DOWNLOAD" = "true" ]; then
     rm -f "$CACHE_DIR"/"$ARCHIVE"
     echo "Downloading $ARCHIVE" | indent
-    wget "$URL" -O "$CACHE_DIR"/"$ARCHIVE" -o /dev/null
+    wget "$URL" -O "$CACHE_DIR"/"$ARCHIVE" | indent
   else
     echo "Reusing already downloaded version of $ARCHIVE" | indent
   fi
