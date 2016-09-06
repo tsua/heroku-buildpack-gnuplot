@@ -59,6 +59,7 @@ function build() {
     tar -xvzf "$ARCHIVE" > /dev/null
   fi
 
+  cd "$CACHE_DIR"/"$DIR"
   echo "Configuring" | indent
   ./configure --prefix=$PREFIX 2>/dev/null >/dev/null
   echo "Building" | indent
