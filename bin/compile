@@ -13,10 +13,10 @@ if [ -f "$ENV_DIR"/ALWAYS_BUILD ]; then
   ALWAYS_BUILD=$(cat "$ENV_DIR"/ALWAYS_BUILD) # Always rebuild everything
 fi
 
-LIBGD_VERSION="2.2.3"
+LIBGD_VERSION="2.3.3"
 LIBGD_URL_PREFIX="https://github.com/libgd/libgd/releases/download/gd-$LIBGD_VERSION"
 
-GNUPLOT_VERSION="5.0.4"
+GNUPLOT_VERSION="5.4.8"
 GNUPLOT_URL_PREFIX="http://downloads.sourceforge.net/project/gnuplot/gnuplot/$GNUPLOT_VERSION"
 
 header() { sed 's/^/-----> /'; }
